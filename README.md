@@ -206,3 +206,6 @@ BERT采用了Transformer Encoder的模型来作为语言模型， 完全抛弃�
 
 - 下载提供的模型文件 or 自己训练得到的模型，放在workspace/wb/目录下
 - 执行代码：`python3  web_demo.py  --device cpu`
+
+## 环境要求
+- Python 3.8

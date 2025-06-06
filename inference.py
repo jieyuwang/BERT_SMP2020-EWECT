@@ -6,8 +6,8 @@ from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Inference')
-    parser.add_argument('--input', type=str, help='input text')
-    parser.add_argument('--device', default='cuda', type=str, help='cpu or cuda')
+    parser.add_argument('--input', type=str, default='所以注定我这辈子是做不了商人妈蛋', help='input text')
+    parser.add_argument('--device', default='cpu', type=str, help='cpu or cuda')
     parser.add_argument('--model_name', default='bert-base-chinese', type=str,
                         help='huggingface transformer model name')
     parser.add_argument('--model_path', default='workspace/wb/best.pt', type=str, help='model path')
