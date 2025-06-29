@@ -1,0 +1,17 @@
+2025-06-28 23:54:23.627 | INFO     | __main__:train:74 - 训练参数: batch_size=16, epochs=5, lr=2e-05, model=bert-base-chinese
+2025-06-29 00:05:09.626 | INFO     | __main__:train:75 - 训练参数: batch_size=16, epochs=5, lr=2e-05, model=bert-base-chinese
+2025-06-29 01:15:07.401 | INFO     | __main__:train:97 - Epoch 1/5 训练损失: 1.1766
+2025-06-29 01:17:35.194 | INFO     | __main__:train:105 - Epoch 1/5 验证损失: 0.6710, 验证准确率: 0.7667, 验证F1: 0.7660
+2025-06-29 01:17:35.883 | INFO     | __main__:train:112 - 保存最优模型到 weibo/model/weiboBest.pt
+2025-06-29 02:26:11.103 | INFO     | __main__:train:97 - Epoch 2/5 训练损失: 0.4817
+2025-06-29 02:28:37.005 | INFO     | __main__:train:105 - Epoch 2/5 验证损失: 0.5485, 验证准确率: 0.8133, 验证F1: 0.8122
+2025-06-29 02:28:37.378 | INFO     | __main__:train:112 - 保存最优模型到 weibo/model/weiboBest.pt
+2025-06-29 03:48:14.724 | INFO     | __main__:train:97 - Epoch 3/5 训练损失: 0.1938
+2025-06-29 03:51:22.076 | INFO     | __main__:train:105 - Epoch 3/5 验证损失: 0.4995, 验证准确率: 0.8367, 验证F1: 0.8372
+2025-06-29 03:51:22.486 | INFO     | __main__:train:112 - 保存最优模型到 weibo/model/weiboBest.pt
+2025-06-29 05:17:03.501 | INFO     | __main__:train:97 - Epoch 4/5 训练损失: 0.0946
+2025-06-29 05:20:15.655 | INFO     | __main__:train:105 - Epoch 4/5 验证损失: 0.4922, 验证准确率: 0.8533, 验证F1: 0.8529
+2025-06-29 05:20:16.070 | INFO     | __main__:train:112 - 保存最优模型到 weibo/model/weiboBest.pt
+2025-06-29 06:47:23.695 | INFO     | __main__:train:97 - Epoch 5/5 训练损失: 0.0425
+2025-06-29 06:50:37.673 | INFO     | __main__:train:105 - Epoch 5/5 验证损失: 0.5058, 验证准确率: 0.8450, 验证F1: 0.8442
+2025-06-29 06:50:37.680 | INFO     | __main__:train:114 - 训练结束

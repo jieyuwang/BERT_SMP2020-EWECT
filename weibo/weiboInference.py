@@ -8,6 +8,9 @@ from tqdm import tqdm
 import torch.multiprocessing as mp
 from functools import partial
 import os
+from sklearn.metrics import accuracy_score, precision_recall_fscore_support, classification_report, confusion_matrix
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 
 class TextDataset(Dataset):
@@ -62,16 +65,20 @@ def main():
     parser.add_argument('--model_name', default='bert-base-chinese', type=str, help='HuggingFace模型名称')
     parser.add_argument('--model_path', default='../workspace/wb/best.pt', type=str, help='模型路径')
     parser.add_argument('--num_labels', default=6, type=int, help='分类标签数量')
-    parser.add_argument('--excel_path', default='jingjinji_text.xlsx', type=str, help='输入Excel文件路径')
-    parser.add_argument('--output_path', default='jingjinji_text_output.xlsx', type=str, help='输出Excel文件路径')
+    parser.add_argument('--excel_path', default='data_new.xlsx', type=str, help='输入Excel文件路径')
+    parser.add_argument('--output_path', default='data_new_output.xlsx', type=str, help='输出Excel文件路径')
     parser.add_argument('--text_column', default='txt', type=str, help='文本数据列名')
+    parser.add_argument('--true_label_column', default=None, type=str, help='真实标签列名（用于评估）')
     parser.add_argument('--batch_size', default=16, type=int, help='每个进程的批处理大小')
     parser.add_argument('--num_processes', default=4, type=int, help='并行进程数')
     parser.add_argument('--chunksize', default=1000, type=int, help='每个进程处理的行数')
+    parser.add_argument('--evaluate', action='store_true', help='是否计算评估指标')
     args = parser.parse_args()
 
     # 标签映射
     label = {0: 'happy', 1: 'angry', 2: 'sad', 3: 'fear', 4: 'surprise', 5: 'neutral'}
+    # 反向映射：标签到数字
+    label_to_id = {v: k for k, v in label.items()}
 
     # 加载模型和分词器
     print(f'加载模型: {args.model_name} ...')
@@ -134,6 +141,103 @@ def main():
 
     # 将结果添加到DataFrame
     df['sentiment'] = sentiment_labels
+
+    # 计算评估指标（如果提供了真实标签）
+    if args.evaluate and args.true_label_column and args.true_label_column in df.columns:
+        print("\n=== 评估指标计算 ===")
+        
+        # 获取真实标签和预测标签
+        true_labels = df[args.true_label_column].astype(str).tolist()
+        pred_labels = df['sentiment'].tolist()
+        
+        # 确保标签格式一致
+        def normalize_label(l):
+            l = str(l).lower().strip()
+            if l in label_to_id:
+                return l
+            # 处理可能的标签变体
+            label_variants = {
+                'happiness': 'happy', 'joy': 'happy',
+                'anger': 'angry', 'mad': 'angry',
+                'sadness': 'sad', 'sorrow': 'sad',
+                'fearful': 'fear', 'scared': 'fear',
+                'surprised': 'surprise', 'shocked': 'surprise',
+                'neutral': 'neutral', 'normal': 'neutral'
+            }
+            return label_variants.get(l, l)
+        
+        true_labels = [normalize_label(l) for l in true_labels]
+        pred_labels = [normalize_label(l) for l in pred_labels]
+        
+        # 计算评估指标
+        accuracy = accuracy_score(true_labels, pred_labels)
+        precision, recall, f1, support = precision_recall_fscore_support(
+            true_labels, pred_labels, average='weighted', zero_division=0
+        )
+        
+        # 计算每个类别的指标
+        precision_macro, recall_macro, f1_macro, _ = precision_recall_fscore_support(
+            true_labels, pred_labels, average='macro', zero_division=0
+        )
+        
+        # 生成分类报告
+        report = classification_report(true_labels, pred_labels, 
+                                     target_names=list(label.values()),
+                                     zero_division=0)
+        
+        # 生成混淆矩阵
+        conf_matrix = confusion_matrix(true_labels, pred_labels, 
+                                     labels=list(label.values()))
+        
+        # 打印评估结果
+        print(f"\n整体评估指标:")
+        print(f"准确率 (Accuracy): {accuracy:.4f}")
+        print(f"精确率 (Precision) - 加权平均: {precision:.4f}")
+        print(f"召回率 (Recall) - 加权平均: {recall:.4f}")
+        print(f"F1分数 (F1-Score) - 加权平均: {f1:.4f}")
+        print(f"精确率 (Precision) - 宏平均: {precision_macro:.4f}")
+        print(f"召回率 (Recall) - 宏平均: {recall_macro:.4f}")
+        print(f"F1分数 (F1-Score) - 宏平均: {f1_macro:.4f}")
+        
+        print(f"\n详细分类报告:")
+        print(report)
+        
+        print(f"\n混淆矩阵:")
+        print(conf_matrix)
+        
+        # 绘制混淆矩阵热力图
+        try:
+            plt.figure(figsize=(10, 8))
+            sns.heatmap(conf_matrix, annot=True, fmt='d', cmap='Blues', 
+                       xticklabels=list(label.values()), 
+                       yticklabels=list(label.values()))
+            plt.xlabel('预测标签')
+            plt.ylabel('真实标签')
+            plt.title('混淆矩阵')
+            plt.tight_layout()
+            plt.savefig('confusion_matrix.png', dpi=300, bbox_inches='tight')
+            plt.show()
+            print("混淆矩阵图已保存为 confusion_matrix.png")
+        except Exception as e:
+            print(f"绘制混淆矩阵失败: {e}")
+        
+        # 保存评估结果到文件
+        evaluation_results = {
+            'accuracy': accuracy,
+            'precision_weighted': precision,
+            'recall_weighted': recall,
+            'f1_weighted': f1,
+            'precision_macro': precision_macro,
+            'recall_macro': recall_macro,
+            'f1_macro': f1_macro
+        }
+        
+        # 将评估结果添加到DataFrame
+        df['true_label'] = true_labels
+        df['prediction_correct'] = [t == p for t, p in zip(true_labels, pred_labels)]
+        
+    elif args.evaluate:
+        print("警告: 未提供真实标签列名或列不存在，跳过评估指标计算")
 
     # 保存结果
     try:

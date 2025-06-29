@@ -1,3 +1,7 @@
+# 要求Python 3.8
+# 使用conda或venv新建环境时请指定python=3.8
+# 例如：conda create -n bert38 python=3.8
+
 harvesttext==0.8.1.4
 loguru==0.5.3
 numpy==1.19.2
@@ -8,3 +12,7 @@ tqdm==4.50.2
 transformers==4.15.0
 tensorboard==2.7.0
 gradio==4.44.1
+protobuf==3.20.3
+setuptools==75.1.0
+openpyxl
+seaborn==0.13.2
